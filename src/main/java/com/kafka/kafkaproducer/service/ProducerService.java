@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 public class ProducerService {
 
     private final KafkaTemplate<String,Object> kafkaTemplate;
-
     public void pub(String msg) {
         kafkaTemplate.send("testTopic", msg);
     }

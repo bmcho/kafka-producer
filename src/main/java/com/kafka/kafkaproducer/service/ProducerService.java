@@ -12,4 +12,8 @@ public class ProducerService {
     public void pub(String msg) {
         kafkaTemplate.send("testTopic", msg);
     }
+
+    public void sendJoinMsg(String topic, Object msg) {
+        kafkaTemplate.send(topic, msg);
+    }
 }

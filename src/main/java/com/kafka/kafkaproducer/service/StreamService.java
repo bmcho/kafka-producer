@@ -31,7 +31,7 @@ public class StreamService {
         ValueJoiner<String, String, String> outerJoiner = (l, r) -> "[OUTER] " + l + " * " + r;
 
         // 3) 조인 윈도우 (1분, 지연 허용 없음)
-        JoinWindows window = JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofMinutes(1));
+        JoinWindows window = JoinWindows.ofTimeDifferenceWithNoGrace(Duration.ofSeconds(10));
 
         // 4) 정규 조인
         KStream<String, String> joined = left.join(right, joiner, window);

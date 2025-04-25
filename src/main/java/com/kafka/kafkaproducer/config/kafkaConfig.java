@@ -1,6 +1,9 @@
 package com.kafka.kafkaproducer.config;
 
+import com.kafka.kafkaproducer.util.PurchaseLogSerializer;
+import com.kafka.kafkaproducer.util.WatchingAdLogSerializer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.config.TopicConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.kafka.streams.StreamsConfig;
@@ -29,11 +32,13 @@ public class kafkaConfig {
         config.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         config.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
         config.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 3);
-//        config.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, 3);
+        config.put(StreamsConfig.producerPrefix(ProducerConfig.ACKS_CONFIG), "all");
+        config.put(StreamsConfig.topicPrefix(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG), 2);
+        config.put(StreamsConfig.NUM_STANDBY_REPLICAS_CONFIG, 1);
         return new KafkaStreamsConfiguration(config);
     }
 
-    @Bean
+    @Bean(name = "defaultKafkaTemplate")
     public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
@@ -46,6 +51,39 @@ public class kafkaConfig {
         producerConfig.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerConfig);
     }
+
+    @Bean(name = "watchingAdLogKafkaTemplate")
+    public KafkaTemplate<String, Object> KafkaTemplateForWatchingAdLog() {
+        return new KafkaTemplate<>(ProducerFactoryForWatchingAdLog());
+    }
+
+    @Bean
+    public ProducerFactory<String, Object> ProducerFactoryForWatchingAdLog() {
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "13.125.205.11:9092, 3.36.63.75:9092, 54.180.1.108:9092");
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, WatchingAdLogSerializer.class);
+
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
+    @Bean(name = "purchaseLogKafkaTemplate")
+    public KafkaTemplate<String, Object> KafkaTemplateForPurchaseLog() {
+        return new KafkaTemplate<>(ProducerFactoryForPurchaseLog());
+    }
+
+    @Bean
+    public ProducerFactory<String, Object> ProducerFactoryForPurchaseLog() {
+        Map<String, Object> config = new HashMap<>();
+
+        config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "13.125.205.11:9092, 3.36.63.75:9092, 54.180.1.108:9092");
+        config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, PurchaseLogSerializer.class);
+
+        return new DefaultKafkaProducerFactory<>(config);
+    }
+
 //    @Bean
 //    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
 //        ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
